@@ -7,13 +7,14 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.widget.Button;
-import android.widget.TextView;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView urlText;
+    private EditText urlText;
     private Button downloadButton;
 
     @Override
@@ -31,11 +32,27 @@ public class MainActivity extends AppCompatActivity {
 
             String url = urlText.getText().toString().trim();
 
-            if (!url.isEmpty()
-                    && !url.equals("No video link received")) {
-
-                downloadVideo(url);
+            if (url.isEmpty()) {
+                Toast.makeText(
+                        this,
+                        "Please paste a video link",
+                        Toast.LENGTH_SHORT
+                ).show();
+                return;
             }
+
+            if (!url.startsWith("http://")
+                    && !url.startsWith("https://")) {
+
+                Toast.makeText(
+                        this,
+                        "Please enter a valid http/https link",
+                        Toast.LENGTH_SHORT
+                ).show();
+                return;
+            }
+
+            downloadVideo(url);
         });
     }
 
@@ -74,6 +91,9 @@ public class MainActivity extends AppCompatActivity {
                             .VISIBILITY_VISIBLE_NOTIFY_COMPLETED
             );
 
+            request.setAllowedOverMetered(true);
+            request.setAllowedOverRoaming(true);
+
             request.setDestinationInExternalPublicDir(
                     Environment.DIRECTORY_DOWNLOADS,
                     "video_" + System.currentTimeMillis() + ".mp4"
@@ -89,17 +109,22 @@ public class MainActivity extends AppCompatActivity {
 
                 downloadManager.enqueue(request);
 
-                urlText.setText(
-                        "Download started!\n\n" + url
-                );
+                urlText.setText("");
+
+                Toast.makeText(
+                        this,
+                        "Download started!",
+                        Toast.LENGTH_SHORT
+                ).show();
             }
 
         } catch (Exception e) {
 
-            urlText.setText(
-                    "Download failed.\n\n" +
-                    "This link is not a direct downloadable video."
-            );
+            Toast.makeText(
+                    this,
+                    "Download failed. This must be a direct downloadable video link.",
+                    Toast.LENGTH_LONG
+            ).show();
         }
     }
 }
